@@ -1,0 +1,17 @@
+{
+  "name": "Anchor - 制御できることに、心を繋ぎ止める",
+  "short_name": "Anchor",
+  "description": "気になることを書き出し、自分の領域／領域外に仕分ける。ストア派の制御の二分法で、頭の中を静かに整える道具。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#14161a",
+  "theme_color": "#14161a",
+  "lang": "ja",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

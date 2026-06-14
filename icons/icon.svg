@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#1a1a1a"/>
+  <g fill="none" stroke="#ffffff" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+    <!-- リング -->
+    <circle cx="256" cy="92" r="30"/>
+    <!-- シャンク（縦軸） -->
+    <line x1="256" y1="122" x2="256" y2="392"/>
+    <!-- ストック（横棒） -->
+    <line x1="196" y1="158" x2="316" y2="158"/>
+    <!-- アーム（下の弧） -->
+    <path d="M150 300 Q256 474 362 300"/>
+  </g>
+  <!-- 爪（フルーク） -->
+  <g fill="#ffffff">
+    <path d="M150 300 L120 304 L152 268 Z"/>
+    <path d="M362 300 L392 304 L360 268 Z"/>
+  </g>
+</svg>

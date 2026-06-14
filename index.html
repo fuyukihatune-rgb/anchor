@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Anchor - 制御できることに、心を繋ぎ止める</title>
+<meta name="description" content="気になっていることを書き出し、自分の領域／領域外に仕分ける。領域外は手放し、自分の領域には小さな一手をひとつ。ストア派の制御の二分法を、責めずに使える道具に。記録は端末の中だけ。" />
+<meta name="theme-color" content="#14161a" />
+<link rel="manifest" href="./manifest.json" />
+<link rel="apple-touch-icon" href="./icons/icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Anchor" />
+<meta property="og:title" content="Anchor" />
+<meta property="og:description" content="制御できることに、心を繋ぎ止める。ストア派の二分法で、頭の中を静かに整える。" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #14161a; --bg-deep: #0f1115; --surface: #1e222a; --surface-2: #252a33;
+    --border: #2c313b; --border-soft: #232831;
+    --text: #e9eaed; --text-2: #aeb4bd; --text-3: #7c828c; --text-4: #565c66;
+    --accent: #6f95a8;        /* 静かな水の色 */
+    --accent-soft: rgba(111,149,168,0.16);
+    --light: #eceef1;
+    --danger: #c98a80;
+    --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  html, body { background: var(--bg); color: var(--text); font-family: -apple-system, "Helvetica Neue", "Noto Sans JP", sans-serif; -webkit-font-smoothing: antialiased; line-height: 1.8; }
+  body { min-height: 100vh; background: linear-gradient(180deg, #181b21 0%, #14161a 45%, #0f1115 100%); background-attachment: fixed; }
+  button { font-family: inherit; color: inherit; }
+  input, textarea { font-family: inherit; }
+
+  .wrap { max-width: 540px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; padding: calc(18px + var(--safe-top)) 20px calc(28px + var(--safe-bottom)); }
+  .top { display: flex; align-items: center; justify-content: space-between; min-height: 34px; }
+  .brand { font-size: 14px; font-weight: 700; letter-spacing: 0.04em; color: var(--text-3); }
+  .top-btn { background: none; border: none; color: var(--text-3); font-size: 13px; cursor: pointer; padding: 6px 8px; border-radius: 8px; }
+  .top-btn:active { background: rgba(255,255,255,0.05); }
+  .center { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+  .btn-primary { background: var(--light); color: #15171c; border: none; border-radius: 14px; padding: 15px 18px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; transition: opacity 0.2s, transform 0.12s; }
+  .btn-primary:active { transform: translateY(1px); opacity: 0.9; }
+  .btn-primary:disabled { opacity: 0.32; cursor: default; }
+  .btn-soft { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--border); border-radius: 14px; padding: 14px 18px; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; transition: background 0.2s; }
+  .btn-soft:active { background: rgba(255,255,255,0.1); }
+  .btn-ghost { background: none; border: 1px solid var(--border); color: var(--text-3); border-radius: 999px; padding: 8px 16px; font-size: 12.5px; cursor: pointer; }
+  .btn-text { background: none; border: none; color: var(--text-3); font-size: 13px; cursor: pointer; padding: 8px; }
+
+  /* Home */
+  .home-q { font-size: 23px; font-weight: 700; line-height: 1.7; text-align: center; letter-spacing: 0.01em; }
+  .home-sub { font-size: 13.5px; color: var(--text-3); text-align: center; margin-top: 14px; line-height: 1.9; }
+  .home-actions { margin-top: 40px; }
+  .home-foot { text-align: center; margin-top: 22px; }
+
+  /* Headings within flow */
+  .step-lead { font-size: 13px; color: var(--text-3); letter-spacing: 0.02em; }
+  .step-title { font-size: 19px; font-weight: 700; margin-top: 4px; line-height: 1.6; }
+  .step-hint { font-size: 13px; color: var(--text-3); margin-top: 10px; line-height: 1.9; }
+
+  /* Dump */
+  .dump-input { display: flex; gap: 8px; margin: 18px 0; }
+  .dump-input input { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 13px 14px; font-size: 15px; color: var(--text); }
+  .dump-input input:focus { outline: none; border-color: var(--accent); }
+  .dump-add { background: var(--accent-soft); border: 1px solid var(--border); color: var(--text); border-radius: 12px; padding: 0 16px; font-size: 20px; cursor: pointer; flex-shrink: 0; }
+  .dump-list { display: flex; flex-direction: column; gap: 8px; }
+  .dump-item { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; padding: 12px 14px; }
+  .dump-item span { flex: 1; font-size: 14.5px; word-break: break-word; }
+  .dump-del { background: none; border: none; color: var(--text-4); font-size: 16px; cursor: pointer; padding: 2px 6px; flex-shrink: 0; }
+  .dump-empty { text-align: center; color: var(--text-4); font-size: 13px; padding: 24px 0; }
+
+  /* Sort */
+  .dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 26px; flex-wrap: wrap; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); }
+  .dot.done { background: var(--accent); }
+  .dot.cur { background: var(--text-2); transform: scale(1.25); }
+  .sort-stage { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .worry-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 30px 24px; text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,0.35); }
+  .worry-text { font-size: 19px; font-weight: 600; line-height: 1.7; word-break: break-word; }
+  .worry-card.sinking { animation: sink 0.95s cubic-bezier(0.5,0,0.7,1) forwards; }
+  @keyframes sink { to { transform: translateY(120px) scale(0.94); opacity: 0; filter: blur(3px); } }
+  .ripple { height: 1px; background: var(--accent); opacity: 0; margin: 0 auto; width: 40%; border-radius: 2px; }
+  .worry-card.sinking + .ripple { animation: ripple 0.95s ease-out forwards; }
+  @keyframes ripple { 0% { opacity: 0; width: 10%; } 40% { opacity: 0.5; width: 70%; } 100% { opacity: 0; width: 90%; } }
+
+  .choices { margin-top: 26px; display: flex; flex-direction: column; gap: 10px; }
+  .choice { display: flex; flex-direction: column; align-items: center; gap: 2px; border: 1px solid var(--border); background: var(--surface); border-radius: 16px; padding: 15px; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+  .choice:active { background: var(--surface-2); }
+  .choice.mine { border-color: rgba(111,168,140,0.5); }
+  .choice.outer { border-color: rgba(111,149,168,0.5); }
+  .choice-main { font-size: 15.5px; font-weight: 700; }
+  .choice-sub { font-size: 11.5px; color: var(--text-3); }
+  .choice-hold { display: flex; justify-content: center; margin-top: 2px; }
+
+  .release-confirm { text-align: center; margin-top: 26px; }
+  .release-line { font-size: 15px; color: var(--text-2); margin-bottom: 18px; line-height: 1.8; }
+
+  .action-block { margin-top: 24px; }
+  .action-input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; font-size: 15px; color: var(--text); min-height: 60px; resize: vertical; line-height: 1.7; }
+  .action-input:focus { outline: none; border-color: var(--accent); }
+
+  /* Summary */
+  .sum-sec { margin-top: 22px; }
+  .sum-head { font-size: 12.5px; font-weight: 700; color: var(--text-3); letter-spacing: 0.04em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .sum-item { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; padding: 13px 15px; margin-bottom: 8px; }
+  .sum-item.released { opacity: 0.55; }
+  .sum-text { font-size: 14.5px; }
+  .sum-text.struck { text-decoration: line-through; text-decoration-color: var(--text-4); color: var(--text-3); }
+  .sum-action { font-size: 13px; color: var(--accent); margin-top: 6px; }
+  .sum-action::before { content: "→ "; }
+  .quote { text-align: center; font-size: 13px; color: var(--text-3); line-height: 1.9; margin: 30px 8px 6px; font-style: normal; }
+
+  /* History */
+  .hist-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; padding: 14px 16px; margin-bottom: 9px; cursor: pointer; }
+  .hist-date { font-size: 14px; font-weight: 600; }
+  .hist-meta { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+  .hist-arrow { color: var(--text-4); }
+
+  /* Reading screens */
+  .read-title { font-size: 20px; font-weight: 800; }
+  .read-sub { font-size: 13px; color: var(--text-3); margin-top: 4px; margin-bottom: 6px; }
+  .read-scroll { max-height: 60vh; overflow-y: auto; -webkit-overflow-scrolling: touch; margin-top: 14px; }
+  .read-h { font-size: 13px; font-weight: 800; margin-top: 18px; margin-bottom: 6px; color: var(--text); }
+  .read-p { font-size: 13.5px; color: var(--text-2); line-height: 1.9; }
+  .read-list { font-size: 13.5px; color: var(--text-2); line-height: 1.9; padding-left: 20px; }
+  .read-list li { margin-bottom: 6px; }
+  .read-list strong, .read-p strong { color: var(--text); }
+
+  /* Settings */
+  .set-card { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 14px; padding: 16px 18px; margin-bottom: 12px; }
+  .set-label { font-size: 13px; font-weight: 800; margin-bottom: 6px; }
+  .set-desc { font-size: 12.5px; color: var(--text-3); line-height: 1.7; margin-bottom: 12px; }
+  .seg { display: flex; background: rgba(255,255,255,0.05); border-radius: 10px; padding: 3px; gap: 3px; }
+  .seg button { flex: 1; border: none; background: none; border-radius: 8px; padding: 9px; font-size: 13px; font-weight: 600; color: var(--text-3); cursor: pointer; }
+  .seg button.active { background: var(--surface-2); color: var(--text); }
+  .dev-link { display: block; font-size: 13px; color: var(--accent); text-decoration: none; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-top: 8px; }
+  .eth-box { background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 12px; font-family: ui-monospace, Menlo, monospace; word-break: break-all; color: var(--text-2); margin-bottom: 10px; }
+  .foot { text-align: center; color: var(--text-4); font-size: 11px; line-height: 1.9; margin-top: 22px; }
+
+  .spacer { flex: 1; }
+  .mt-auto { margin-top: auto; }
+  .toast { position: fixed; left: 50%; bottom: calc(26px + var(--safe-bottom)); transform: translateX(-50%) translateY(20px); background: #2a2f38; color: #fff; font-size: 13px; padding: 11px 20px; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s; z-index: 90; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  @media (prefers-reduced-motion: reduce) { .worry-card.sinking { animation: none; opacity: 0; } .ripple { display: none; } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+<script>
+"use strict";
+
+const STORAGE_KEY = 'anchor_v1';
+const APP_VERSION = '1.0.0';
+const VERSION_KEY = 'anchor_version';
+const TERMS_VERSION = 1;
+const STILL_URL = 'https://still.xdcyw.net';
+
+const WHATS_NEW = [
+  "Anchor をリリースしました。気になることを書き出し、手の中にあることだけに、そっと心を繋ぎ止める時間に。",
+];
+const DEV_INFO = {
+  name: "田中志（たなかしるす）",
+  message: "Ataraxia Works という名前で、心にそっと寄り添う小さな道具をつくっています。",
+  links: [{ label: "X（Twitter）", url: "https://x.com/Sirusu_Tanaka" }],
+};
+const DONATIONS = [
+  { key: "btc", label: "ビットコイン（BTC）", address: "1EHshWSHyvJFjkAYQ5rPX7nKo2FRKWF58f" },
+  { key: "eth", label: "イーサリアム（ETH）", address: "0xb7da6af09c0f8db95d0c0e352e32d1915483931e" },
+];
+const QUOTES = [
+  "「我々の力の及ぶものと、及ばないものがある。」— エピクテトス『提要』",
+  "「人を煩わせるのは出来事ではなく、出来事についての考えである。」— エピクテトス",
+  "「変えられないことは受け入れ、変えられることに力を注ぐ。」",
+  "「起きてほしいように望むのではなく、起きることをそのまま受けとる。」— エピクテトス",
+  "「過ぎたことはもう手の外に。これからのことは、まだ手の中に。」",
+  "「今、自分にできる小さな一つ。それで、十分。」",
+];
+
+let state = {
+  agreedTermsVersion: 0,
+  sessions: [],                 // { id, createdAt, items[] }
+  settings: { showQuote: true },
+};
+
+// 進行中の下書き
+let draft = null;               // { items: [ {id,text,category,action,released,createdAt} ] }
+let view = 'home';              // home | dump | sort | summary | history | session | settings
+let showTermsView = false;
+let showHelp = false;
+let updateInfo = null;
+let sortIndex = 0;
+let sortSub = 'choose';         // choose | release | action
+let releasing = false;
+let actionDraft = '';
+let viewingSessionId = null;
+
+// ── Persistence ─────────────────────────────────────────────────────────────
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    if (s && typeof s === 'object') {
+      state = Object.assign({}, state, s);
+      state.settings = Object.assign({ showQuote: true }, s.settings || {});
+      if (!Array.isArray(state.sessions)) state.sessions = [];
+    }
+  } catch {}
+}
+function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {} }
+
+// ── Utilities ─────────────────────────────────────────────────────────────
+function randomId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function escHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+function showToast(msg) {
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(showToast._t); showToast._t = setTimeout(() => t.classList.remove('show'), 2200);
+}
+function fmtDate(ts) { const d = new Date(ts); const w = ['日','月','火','水','木','金','土'][d.getDay()]; return (d.getMonth()+1) + '月' + d.getDate() + '日（' + w + '） ' + ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2); }
+function isInStandaloneMode() { return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true; }
+function isIOS() { return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
+
+function checkVersion() {
+  let prev = null; try { prev = localStorage.getItem(VERSION_KEY); } catch {}
+  if (prev && prev !== APP_VERSION) updateInfo = { from: prev, to: APP_VERSION };
+  if (!updateInfo) { try { localStorage.setItem(VERSION_KEY, APP_VERSION); } catch {} }
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────
+function render() {
+  const app = document.getElementById('app');
+  if ((state.agreedTermsVersion || 0) < TERMS_VERSION) { app.innerHTML = renderTerms(false); return; }
+  if (showTermsView) { app.innerHTML = renderTerms(true); return; }
+  if (showHelp) { app.innerHTML = renderHelp(); return; }
+  if (updateInfo) { app.innerHTML = renderUpdate(); return; }
+  if (view === 'dump') { app.innerHTML = renderDump(); focusDump(); return; }
+  if (view === 'sort') { app.innerHTML = renderSort(); afterSortRender(); return; }
+  if (view === 'summary') { app.innerHTML = renderSummary(); return; }
+  if (view === 'history') { app.innerHTML = renderHistory(); return; }
+  if (view === 'session') { app.innerHTML = renderSessionView(); return; }
+  if (view === 'settings') { app.innerHTML = renderSettings(); return; }
+  app.innerHTML = renderHome();
+}
+function shell(inner, opts) {
+  opts = opts || {};
+  const left = opts.back ? '<button class="top-btn" onclick="' + opts.back + '">‹ もどる</button>' : '<span class="brand">Anchor</span>';
+  const right = opts.right || '';
+  return '<div class="wrap"><div class="top">' + left + right + '</div>' + inner + '</div>';
+}
+
+// ── HOME ─────────────────────────────────────────────────────────────────────
+function renderHome() {
+  const hasHist = state.sessions.length > 0;
+  return shell(
+    '<div class="center">'
+    + '<div class="home-q">今、気になっていることは？</div>'
+    + '<div class="home-sub">頭の中のもやもやを書き出して、<br>「手の中にあること」だけに、心を繋ぎ止める。</div>'
+    + '<div class="home-actions"><button class="btn-primary" onclick="startSession()">はじめる</button></div>'
+    + (hasHist ? '<div class="home-foot"><button class="btn-text" onclick="go(\'history\')">これまでの記録</button></div>' : '')
+    + '</div>',
+    { right: '<button class="top-btn" onclick="go(\'settings\')">⚙</button>' }
+  );
+}
+function go(v) { view = v; showHelp = false; showTermsView = false; render(); }
+function startSession() { draft = { items: [] }; view = 'dump'; render(); }
+
+// ── DUMP ─────────────────────────────────────────────────────────────────────
+function renderDump() {
+  const items = draft.items;
+  const list = items.length
+    ? '<div class="dump-list">' + items.map(function(it) {
+        return '<div class="dump-item"><span>' + escHtml(it.text) + '</span><button class="dump-del" onclick="removeItem(\'' + it.id + '\')" aria-label="削除">✕</button></div>';
+      }).join('') + '</div>'
+    : '<div class="dump-empty">気になっていることを、ひとつずつ。</div>';
+  return shell(
+    '<div style="margin-top:18px"><div class="step-lead">書き出す</div>'
+    + '<div class="step-title">気になっていることを、書き出す。</div>'
+    + '<div class="step-hint">順番も、まとまりも、まだ気にしなくていい。</div>'
+    + '<div class="dump-input"><input type="text" id="dump-field" placeholder="例：明日の面談、あの返信、お金のこと…" maxlength="120" '
+    + 'onkeydown="if(event.key===\'Enter\')addItem()" /><button class="dump-add" onclick="addItem()" aria-label="追加">＋</button></div>'
+    + list
+    + '<div class="mt-auto"></div>'
+    + '<div style="margin-top:24px"><button class="btn-primary" ' + (items.length ? '' : 'disabled') + ' onclick="toSort()">仕分けへ進む（' + items.length + '）</button></div>'
+    + '</div>',
+    { back: 'cancelToHome()' }
+  );
+}
+function focusDump() { const f = document.getElementById('dump-field'); if (f) f.focus(); }
+function addItem() {
+  const f = document.getElementById('dump-field');
+  const txt = (f ? f.value : '').trim();
+  if (!txt) return;
+  draft.items.push({ id: randomId(), text: txt, category: 'unsure', action: '', released: false, createdAt: Date.now() });
+  render();
+}
+function removeItem(id) { draft.items = draft.items.filter(i => i.id !== id); render(); }
+function cancelToHome() {
+  if (draft && draft.items.length && !confirm('書き出したものは保存されません。やめますか？')) return;
+  draft = null; view = 'home'; render();
+}
+
+// ── SORT ─────────────────────────────────────────────────────────────────────
+function startSort() { sortIndex = 0; sortSub = 'choose'; releasing = false; actionDraft = ''; }
+function toSort() { startSort(); view = 'sort'; render(); }
+function renderSort() {
+  const items = draft.items;
+  const it = items[sortIndex];
+  const dots = items.map(function(_, i) {
+    return '<div class="dot' + (i < sortIndex ? ' done' : (i === sortIndex ? ' cur' : '')) + '"></div>';
+  }).join('');
+
+  let body;
+  if (sortSub === 'release') {
+    body = '<div class="sort-stage">'
+      + '<div class="worry-card' + (releasing ? ' sinking' : '') + '"><div class="worry-text">' + escHtml(it.text) + '</div></div><div class="ripple"></div>'
+      + (releasing ? '' :
+          '<div class="release-confirm"><div class="release-line">これは、自分の手の外にある。</div>'
+          + '<button class="btn-primary" onclick="doRelease()">手放す</button>'
+          + '<button class="btn-text" style="margin-top:8px" onclick="backToChoose()">もどす</button></div>')
+      + '</div>';
+  } else if (sortSub === 'action') {
+    body = '<div class="sort-stage">'
+      + '<div class="worry-card"><div class="worry-text">' + escHtml(it.text) + '</div></div>'
+      + '<div class="action-block"><div class="release-line" style="text-align:center;margin-bottom:14px">自分にできる、次の小さな一手をひとつ。</div>'
+      + '<textarea class="action-input" id="action-field" maxlength="140" placeholder="例：とりあえず5分だけ着手する／一行だけ返信する">' + escHtml(actionDraft) + '</textarea>'
+      + '<button class="btn-primary" style="margin-top:12px" onclick="saveAction()">これにする</button>'
+      + '<button class="btn-text" style="margin-top:6px;width:100%" onclick="skipAction()">いまは決めない</button>'
+      + '<div style="text-align:center"><button class="btn-text" onclick="backToChoose()">もどす</button></div></div>'
+      + '</div>';
+  } else {
+    body = '<div class="sort-stage">'
+      + '<div class="worry-card"><div class="worry-text">' + escHtml(it.text) + '</div></div>'
+      + '<div class="choices">'
+      + '<button class="choice mine" onclick="chooseMine()"><div class="choice-main">自分の領域</div><div class="choice-sub">握っていい・動かせる</div></button>'
+      + '<button class="choice outer" onclick="chooseOuter()"><div class="choice-main">領域外</div><div class="choice-sub">手の外・手放していい</div></button>'
+      + '<div class="choice-hold"><button class="btn-ghost" onclick="chooseUnsure()">まだ決めない（保留）</button></div>'
+      + '</div></div>';
+  }
+
+  return shell(
+    '<div style="margin-top:14px;display:flex;flex-direction:column;flex:1">'
+    + '<div class="dots">' + dots + '</div>'
+    + '<div class="step-lead" style="text-align:center">ひとつずつ、どちらの手の中にあるか見てみる。 <span style="color:var(--text-4)">' + (sortIndex+1) + ' / ' + items.length + '</span></div>'
+    + body
+    + '</div>',
+    { back: 'sortBack()' }
+  );
+}
+function afterSortRender() { if (sortSub === 'action') { const f = document.getElementById('action-field'); if (f) { f.focus(); f.value = actionDraft; } } }
+function sortBack() {
+  if (sortSub !== 'choose') { backToChoose(); return; }
+  if (sortIndex > 0) { sortIndex--; sortSub = 'choose'; render(); }
+  else { view = 'dump'; render(); }
+}
+function backToChoose() { sortSub = 'choose'; releasing = false; render(); }
+function chooseMine() { draft.items[sortIndex].category = 'controllable'; actionDraft = draft.items[sortIndex].action || ''; sortSub = 'action'; render(); }
+function chooseOuter() { draft.items[sortIndex].category = 'uncontrollable'; sortSub = 'release'; releasing = false; render(); }
+function chooseUnsure() { draft.items[sortIndex].category = 'unsure'; advanceSort(); }
+function doRelease() {
+  draft.items[sortIndex].released = true;
+  releasing = true; render();
+  setTimeout(function() { releasing = false; advanceSort(); }, 980);
+}
+function saveAction() { const f = document.getElementById('action-field'); draft.items[sortIndex].action = (f ? f.value : '').trim(); advanceSort(); }
+function skipAction() { const f = document.getElementById('action-field'); draft.items[sortIndex].action = (f ? f.value : '').trim(); advanceSort(); }
+function advanceSort() {
+  actionDraft = '';
+  if (sortIndex + 1 >= draft.items.length) { view = 'summary'; render(); }
+  else { sortIndex++; sortSub = 'choose'; render(); }
+}
+
+// ── SUMMARY ────────────────────────────────────────────────────────────────────
+function renderSummary() {
+  const items = draft.items;
+  const released = items.filter(i => i.released);
+  const mine = items.filter(i => i.category === 'controllable');
+  const held = items.filter(i => i.category === 'unsure' || (i.category === 'uncontrollable' && !i.released));
+
+  let html = '<div style="margin-top:14px"><div class="step-lead">まとめ</div>'
+    + '<div class="step-title">手放したものと、これから動かせるもの。</div>'
+    + '<div class="step-hint">それで十分。採点も、評価もありません。</div>';
+
+  if (released.length) {
+    html += '<div class="sum-sec"><div class="sum-head">🌊 手放したこと</div>'
+      + released.map(function(i) { return '<div class="sum-item released"><div class="sum-text struck">' + escHtml(i.text) + '</div></div>'; }).join('')
+      + '</div>';
+  }
+  if (mine.length) {
+    html += '<div class="sum-sec"><div class="sum-head">⚓ これから動かせること</div>'
+      + mine.map(function(i) { return '<div class="sum-item"><div class="sum-text">' + escHtml(i.text) + '</div>' + (i.action ? '<div class="sum-action">' + escHtml(i.action) + '</div>' : '') + '</div>'; }).join('')
+      + '</div>';
+  }
+  if (held.length) {
+    html += '<div class="sum-sec"><div class="sum-head">…保留中</div>'
+      + held.map(function(i) { return '<div class="sum-item"><div class="sum-text" style="color:var(--text-2)">' + escHtml(i.text) + '</div></div>'; }).join('')
+      + '</div>';
+  }
+  if (state.settings.showQuote) {
+    html += '<div class="quote">' + escHtml(QUOTES[Math.floor(Math.random() * QUOTES.length)]) + '</div>';
+  }
+  html += '<div style="margin-top:26px"><button class="btn-primary" onclick="finishSession()">おわる</button>'
+    + '<a href="' + STILL_URL + '" target="_blank" rel="noopener" style="text-decoration:none"><button class="btn-soft" style="margin-top:10px">身体からも、少し落ち着けますか — Still へ</button></a></div>'
+    + '</div>';
+  return shell(html, {});
+}
+function finishSession() {
+  const s = { id: randomId(), createdAt: Date.now(), items: draft.items };
+  state.sessions.unshift(s);
+  if (state.sessions.length > 200) state.sessions = state.sessions.slice(0, 200);
+  saveState();
+  draft = null; view = 'home'; render();
+  showToast('そっと、置いておきました');
+}
+
+// ── HISTORY ────────────────────────────────────────────────────────────────────
+function renderHistory() {
+  const list = state.sessions.length
+    ? state.sessions.map(function(s) {
+        const rel = s.items.filter(i => i.released).length;
+        const mine = s.items.filter(i => i.category === 'controllable').length;
+        return '<div class="hist-item" onclick="openSession(\'' + s.id + '\')"><div><div class="hist-date">' + fmtDate(s.createdAt) + '</div>'
+          + '<div class="hist-meta">手放した ' + rel + '・動かす ' + mine + '</div></div><div class="hist-arrow">›</div></div>';
+      }).join('')
+    : '<div class="dump-empty">まだ記録はありません。</div>';
+  return shell('<div style="margin-top:16px"><div class="step-title" style="margin-bottom:16px">これまでの記録</div>' + list + '</div>', { back: 'go(\'home\')' });
+}
+function openSession(id) { viewingSessionId = id; view = 'session'; render(); }
+function renderSessionView() {
+  const s = state.sessions.find(x => x.id === viewingSessionId);
+  if (!s) { view = 'history'; return renderHistory(); }
+  const released = s.items.filter(i => i.released);
+  const mine = s.items.filter(i => i.category === 'controllable');
+  const held = s.items.filter(i => i.category === 'unsure' || (i.category === 'uncontrollable' && !i.released));
+  let html = '<div style="margin-top:16px"><div class="step-lead">' + escHtml(fmtDate(s.createdAt)) + '</div>'
+    + '<div class="step-title" style="margin-bottom:6px">この日の整理</div>';
+  if (released.length) html += '<div class="sum-sec"><div class="sum-head">🌊 手放したこと</div>' + released.map(i => '<div class="sum-item released"><div class="sum-text struck">' + escHtml(i.text) + '</div></div>').join('') + '</div>';
+  if (mine.length) html += '<div class="sum-sec"><div class="sum-head">⚓ これから動かせること</div>' + mine.map(i => '<div class="sum-item"><div class="sum-text">' + escHtml(i.text) + '</div>' + (i.action ? '<div class="sum-action">' + escHtml(i.action) + '</div>' : '') + '</div>').join('') + '</div>';
+  if (held.length) html += '<div class="sum-sec"><div class="sum-head">…保留</div>' + held.map(i => '<div class="sum-item"><div class="sum-text" style="color:var(--text-2)">' + escHtml(i.text) + '</div></div>').join('') + '</div>';
+  if (released.length) html += '<div class="step-hint" style="margin-top:18px">あのとき手放したことは、いま、どうなっているでしょう。多くは、自然と過ぎていきます。</div>';
+  html += '<div style="margin-top:22px"><button class="btn-soft" onclick="deleteSession(\'' + s.id + '\')" style="color:var(--danger)">この記録を削除</button></div></div>';
+  return shell(html, { back: 'go(\'history\')' });
+}
+function deleteSession(id) {
+  if (!confirm('この記録を削除しますか？')) return;
+  state.sessions = state.sessions.filter(s => s.id !== id); saveState();
+  view = 'history'; render(); showToast('削除しました');
+}
+
+// ── TERMS ──────────────────────────────────────────────────────────────────────
+function renderTermsBody() {
+  return '<div class="read-h">このアプリについて</div>'
+    + '<p class="read-p">Anchor（アンカー）は、気になっていることを書き出し、「自分に制御できること／できないこと」に仕分けて、頭の中を静かに整えるための道具です。古代ストア派エピクテトスの「制御の二分法」を下敷きにしています。</p>'
+    + '<div class="read-h">あなたのデータについて</div>'
+    + '<ul class="read-list"><li>書いた内容は、すべて<strong>この端末の中だけ</strong>に保存されます。</li>'
+    + '<li>外部のサーバーには送りません。広告も、追跡も、ログインもありません。</li>'
+    + '<li>アプリやブラウザのデータを消すと、記録も消えます。</li></ul>'
+    + '<div class="read-h">大切にしていること</div>'
+    + '<ul class="read-list"><li>このアプリは、<strong>あなたを急かしたり、責めたりしません</strong>。途中でやめても大丈夫です。</li>'
+    + '<li>「やること」を溜めさせません。動かせることには、小さな一手をひとつだけ。</li></ul>'
+    + '<div class="read-h">使うときに</div>'
+    + '<ul class="read-list"><li>このアプリは<strong>医療の道具ではありません</strong>。診断や治療の代わりにはなりません。</li>'
+    + '<li>つらさが強いとき、ひとりで抱えきれないときは、信頼できる人や専門の窓口にも頼ってください。あなたは、ひとりではありません。</li>'
+    + '<li>このアプリの利用によって生じたことについて、作者は責任を負えないことをご理解ください。</li></ul>'
+    + '<div class="read-h">無料です</div>'
+    + '<p class="read-p">このアプリは無料で使えます。応援したい人だけ、設定から寄付ができます（任意です）。</p>';
+}
+function renderTerms(viewOnly) {
+  return '<div class="wrap"><div class="top"><span class="brand">Anchor</span></div>'
+    + '<div style="margin-top:10px"><div class="read-title">プライバシーと規約</div>'
+    + '<div class="read-sub">かんたんに言うと「データはこの端末の中だけ」「責めません」です。</div>'
+    + '<div class="read-scroll">' + renderTermsBody() + '</div>'
+    + (viewOnly ? '<button class="btn-primary" style="margin-top:18px" onclick="closeTerms()">閉じる</button>'
+                : '<button class="btn-primary" style="margin-top:18px" onclick="agreeTerms()">読みました・はじめる</button>')
+    + '<div class="foot">同意すると、この内容に納得したことになります</div></div></div>';
+}
+function agreeTerms() { state.agreedTermsVersion = TERMS_VERSION; saveState(); render(); }
+function viewTerms() { showTermsView = true; render(); }
+function closeTerms() { showTermsView = false; render(); }
+
+// ── HELP ───────────────────────────────────────────────────────────────────────
+function renderHelp() {
+  return '<div class="wrap"><div class="top"><button class="top-btn" onclick="closeHelp()">‹ もどる</button></div>'
+    + '<div style="margin-top:10px"><div class="read-title">使い方ガイド</div>'
+    + '<div class="read-sub">2〜5分で、頭の中をひと整理。</div>'
+    + '<div class="read-scroll">'
+    + '<div class="read-h">① 書き出す</div><p class="read-p">いま気になっていることを、ひとつずつ書き出します。順番も、まとまりも、気にしなくて大丈夫。</p>'
+    + '<div class="read-h">② 仕分ける</div><p class="read-p">カードを1枚ずつ、「自分の領域（手の中・動かせる）」か「領域外（手の外）」に分けます。迷うものは「保留」へ。1枚ずつ向き合うことで、頭の渦が、個別のことがらにほどけていきます。</p>'
+    + '<div class="read-h">③ 手放す</div><p class="read-p">領域外のものは「手放す」。カードが静かに沈みます。握りしめていたものを、いったん置いておく動作です。記録には残ります。</p>'
+    + '<div class="read-h">④ 一手をひとつ</div><p class="read-p">自分の領域のものには、「次の小さな一手」をひとつだけ。たくさん書く必要はありません。むしろ、ひとつだけにします。</p>'
+    + '<div class="read-h">⑤ まとめ</div><p class="read-p">手放したことと、これから動かせること。それを静かに眺めて、おしまい。よかったら、Still で身体からも落ち着けます。</p>'
+    + '<div class="read-h">🤍 大切にしていること</div><p class="read-p">このアプリには、連続日数も、達成バッジも、通知もありません。鎮めに来たあなたに、新しい義務を渡さないためです。いつ来ても、いつやめても大丈夫。</p>'
+    + '</div><button class="btn-primary" style="margin-top:18px" onclick="closeHelp()">閉じる</button></div></div>';
+}
+function openHelp() { showHelp = true; render(); }
+function closeHelp() { showHelp = false; render(); }
+
+// ── UPDATE ─────────────────────────────────────────────────────────────────────
+function renderUpdate() {
+  return '<div class="wrap"><div class="top"><span class="brand">Anchor</span></div>'
+    + '<div style="margin-top:10px"><div class="read-title">新しくなりました</div>'
+    + '<div class="read-sub">' + (updateInfo.from ? 'バージョン ' + escHtml(updateInfo.from) + ' → ' + escHtml(updateInfo.to) : '最新版（' + escHtml(updateInfo.to) + '）になりました') + '</div>'
+    + '<div class="read-scroll"><ul class="read-list" style="margin-top:10px">' + WHATS_NEW.map(x => '<li>' + escHtml(x) + '</li>').join('') + '</ul></div>'
+    + '<button class="btn-primary" style="margin-top:18px" onclick="dismissUpdate()">続ける</button></div></div>';
+}
+function dismissUpdate() { try { localStorage.setItem(VERSION_KEY, APP_VERSION); } catch {} updateInfo = null; render(); }
+
+// ── SETTINGS ───────────────────────────────────────────────────────────────────
+function activeDonations() { return DONATIONS.filter(d => d.address && d.address.trim()); }
+function renderSettings() {
+  const standalone = isInStandaloneMode(); const ios = isIOS();
+  let install = '';
+  if (!standalone) {
+    install = '<div class="set-card"><div class="set-label">📲 ホーム画面に追加</div><div class="set-desc">アプリのようにすぐ開けて、オフラインでも動きます。</div>';
+    if (ios) install += '<div class="read-p" style="font-size:12.5px">Safari下部の共有ボタン（□↑）→「ホーム画面に追加」を選んでください。</div>';
+    else if (deferredPrompt) install += '<button class="btn-soft" onclick="triggerInstall()">ホーム画面に追加</button>';
+    else install += '<div class="read-p" style="font-size:12.5px">ブラウザのメニュー（⋮）→「ホーム画面に追加」を選んでください。</div>';
+    install += '</div>';
+  }
+  const q = state.settings.showQuote;
+  return '<div class="wrap"><div class="top"><button class="top-btn" onclick="go(\'home\')">‹ もどる</button><span class="brand">設定</span></div>'
+    + '<div style="margin-top:14px">'
+    + install
+    + '<div class="set-card"><div class="set-label">まとめの一節</div><div class="set-desc">セッションの終わりに、ストア派などの一節を静かに添えます。</div>'
+    + '<div class="seg"><button class="' + (q?'active':'') + '" onclick="setQuote(true)">添える</button><button class="' + (!q?'active':'') + '" onclick="setQuote(false)">添えない</button></div></div>'
+    + '<div class="set-card"><div class="set-label">使い方</div><div class="set-desc">この道具の流れと、大切にしていることを。</div><button class="btn-soft" onclick="openHelp()">使い方を見る</button></div>'
+    + '<div class="set-card"><div class="set-label">プライバシーと規約</div><div class="set-desc">最初に表示した内容をもう一度読めます。</div><button class="btn-soft" onclick="viewTerms()">プライバシーと規約を読む</button></div>'
+    + '<div class="set-card"><div class="set-label">開発者</div><div class="read-p" style="font-size:12.5px">' + escHtml(DEV_INFO.name) + '<br>' + escHtml(DEV_INFO.message) + '</div>'
+    + DEV_INFO.links.map(l => '<a class="dev-link" href="' + escHtml(l.url) + '" target="_blank" rel="noopener noreferrer">🔗 ' + escHtml(l.label) + '</a>').join('') + '</div>'
+    + '<div class="set-card"><div class="set-label">開発者に寄付する</div>'
+    + (activeDonations().length
+        ? '<div class="set-desc">よかったら暗号資産で応援できます。任意です。</div>' + activeDonations().map(d => '<div style="margin-top:8px"><div style="font-size:12.5px;font-weight:700;margin-bottom:6px">' + escHtml(d.label) + '</div><div class="eth-box">' + escHtml(d.address) + '</div><button class="btn-soft" onclick="copyAddr(\'' + escHtml(d.address) + '\')">アドレスをコピー</button></div>').join('')
+        : '<div class="set-desc" style="margin-bottom:0">寄付先はまだ設定されていません。</div>') + '</div>'
+    + '<div class="set-card"><div class="set-label">アプリの更新</div><div class="set-desc">v' + escHtml(APP_VERSION) + '（記録は消えません）。</div><button class="btn-soft" onclick="forceUpdate()">最新にして再読み込み</button></div>'
+    + '<div class="set-card"><div class="set-label" style="color:var(--danger)">すべて消す</div><div class="set-desc">これまでの記録をすべて削除します。取り消せません。</div><button class="btn-soft" style="color:var(--danger)" onclick="resetApp()">すべてのデータを削除</button></div>'
+    + '<div class="foot">Anchor v' + escHtml(APP_VERSION) + '<br>Ataraxia Works · 制御できることに、心を繋ぎ止める<br>© 田中志 / Ataraxia Works</div>'
+    + '</div></div>';
+}
+function setQuote(v) { state.settings.showQuote = v; saveState(); render(); }
+function copyAddr(text) {
+  const done = function() { showToast('アドレスをコピーしました'); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+  else fallbackCopy(text, done);
+}
+function fallbackCopy(text, done) {
+  try { const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done(); }
+  catch { showToast('コピーできませんでした'); }
+}
+function resetApp() {
+  if (!confirm('これまでの記録をすべて削除します。元に戻せません。よろしいですか？')) return;
+  try { localStorage.removeItem(STORAGE_KEY); } catch {}
+  state = { agreedTermsVersion: TERMS_VERSION, sessions: [], settings: { showQuote: true } };
+  saveState(); draft = null; view = 'home'; render(); showToast('削除しました');
+}
+
+// ── PWA ────────────────────────────────────────────────────────────────────────
+let deferredPrompt = null;
+async function triggerInstall() {
+  if (deferredPrompt) { deferredPrompt.prompt(); try { await deferredPrompt.userChoice; } catch {} deferredPrompt = null; render(); return; }
+  showToast(isIOS() ? 'Safariの共有ボタンから「ホーム画面に追加」を選んでください' : 'ブラウザのメニューから「ホーム画面に追加」を選んでください');
+}
+async function forceUpdate() {
+  try {
+    if ('serviceWorker' in navigator) { const regs = await navigator.serviceWorker.getRegistrations(); await Promise.all(regs.map(r => r.unregister())); }
+    if (window.caches && caches.keys) { const keys = await caches.keys(); await Promise.all(keys.map(k => caches.delete(k))); }
+  } catch {}
+  window.location.reload();
+}
+window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); deferredPrompt = e; if (view === 'settings') render(); });
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
+loadState();
+checkVersion();
+render();
+
+if ('serviceWorker' in navigator) {
+  var hadController = !!navigator.serviceWorker.controller;
+  var reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', function() { if (!hadController || reloading) return; reloading = true; window.location.reload(); });
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js').then(function(reg) {
+      reg.update().catch(function() {});
+      reg.addEventListener('updatefound', function() {
+        var nw = reg.installing; if (!nw) return;
+        nw.addEventListener('statechange', function() { if (nw.state === 'installed' && navigator.serviceWorker.controller) nw.postMessage({ type: 'SKIP_WAITING' }); });
+      });
+    }).catch(function() {});
+  });
+}
+</script>
+</body>
+</html>
